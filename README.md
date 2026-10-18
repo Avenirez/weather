@@ -1,109 +1,109 @@
-# Weatherez: Atmospheric Telemetry Engine
+# Weatherez: Mesin Telemetri Atmosfer
 
-A client-side meteorological monitoring application built with Svelte 5 and Vite. It consumes open weather and air quality APIs to deliver real-time environmental metrics, 24-hour predictive curves, and geospatial telemetry.
+Aplikasi pemantau meteorologi sisi klien yang dibangun menggunakan Svelte 5 dan Vite. Aplikasi ini mengonsumsi API cuaca dan kualitas udara terbuka untuk menyajikan metrik lingkungan waktu nyata, kurva prediksi 24 jam, serta telemetri geospasial.
 
-## System Architecture
+## Arsitektur Sistem
 
-Weatherez connects to public upstream endpoints without an intermediate proxy server:
+Weatherez terhubung langsung ke titik akhir publik tanpa perantara server proxy:
 
-1. Open-Meteo Forecast API: Current weather vectors, 24-hour temperature steps, 7-day high/low boundaries, and solar ephemeris (sunrise and sunset timestamps).
-2. Open-Meteo Air Quality API: European Air Quality Index (AQI), PM2.5, PM10, ozone, carbon monoxide, nitrogen dioxide, and solar UV radiation.
-3. Open-Meteo Geocoding API: Substring lookup for global coordinates, administrative divisions, and timezones.
-4. BigDataCloud Reverse Geocoding API: Resolves browser hardware coordinates (WGS84) to local municipal boundaries.
-5. Deterministic Simulation Fallback: In offline states or during upstream outages, a local pseudo-random generator computes seasonal baseline data matched to geographic latitude.
+1. Open-Meteo Forecast API: Vektor cuaca terkini, interval suhu 24 jam, batas suhu tertinggi dan terendah 7 hari, serta data efemeris matahari (waktu terbit dan terbenam).
+2. Open-Meteo Air Quality API: Indeks Kualitas Udara Eropa (AQI), PM2.5, PM10, ozon, karbon monoksida, nitrogen dioksida, serta radiasi UV matahari.
+3. Open-Meteo Geocoding API: Pencarian koordinat global, wilayah administratif, dan zona waktu.
+4. BigDataCloud Reverse Geocoding API: Mengubah koordinat perangkat keras peramban (WGS84) menjadi batas wilayah administratif lokal.
+5. Fallback Simulasi Deterministik: Saat luring atau terjadi gangguan jaringan hulu, generator pseudorandom lokal menghitung data dasar musiman berdasarkan lintang geografis.
 
-## Core Capabilities
+## Kemampuan Utama
 
-- High-Density Telemetry: Surface temperature, apparent temperature, relative humidity, barometric pressure, horizontal visibility, and cloud cover.
-- 24-Hour Continuous Spline Chart: SVG cubic Bezier curve showing hourly temperature variation and rain probability bars.
-- Vector Solar Trajectory: Computes diurnal sun position along an SVG geometric arc based on local sunrise and sunset timestamps.
-- Directional Wind Compass: Visual dial showing bearing degrees and cardinal markers (N, E, S, W) linked to surface wind velocity.
-- Debounced Query Engine: 250ms input debouncer with full keyboard navigation (Up, Down, Enter, Escape) and metro suggestions.
-- Location Persistence: LocalStorage records for search history and saved locations with prototype pollution filtering.
-- Visual Mode Override: State toggle between automatic solar cycle, permanent dark theme, and permanent light theme.
+- Telemetri Kepadatan Tinggi: Suhu permukaan, suhu semu, kelembapan relatif, tekanan udara barometrik, jarak pandang horizontal, serta tutupan awan.
+- Grafik Spline Kontinu 24 Jam: Kurva Bezier kubik SVG yang memvisualisasikan variasi suhu per jam dan diagram batang peluang hujan.
+- Lintasan Matahari Vektor: Menghitung posisi harian matahari di sepanjang busur geometris SVG berdasarkan data waktu terbit dan terbenam lokal.
+- Kompas Arah Angin: Indikator visual derajat sudut arah angin dan penanda mata angin (U, T, S, B / N, E, S, W) yang terhubung dengan kecepatan angin permukaan.
+- Mesin Pencarian Ter-debounce: Penunda input 250ms dengan dukungan navigasi papan ketik penuh (Panah Atas, Panah Bawah, Enter, Escape) dan rekomendasi kota.
+- Persistensi Lokasi: Penyimpanan riwayat pencarian dan lokasi tersimpan pada LocalStorage dengan penyaringan prototype pollution.
+- Pengalih Mode Visual: Pilihan status antara siklus matahari otomatis, tema gelap permanen, dan tema terang permanen.
 
-## Security Controls
+## Kontrol Keamanan
 
-The application enforces client-side controls aligned with standard web application security requirements:
+Aplikasi ini menerapkan kontrol sisi klien yang selaras dengan standar keamanan aplikasi web:
 
-- DOM XSS Mitigation: Leaflet map markers and popups use native DOM nodes (`document.createElement` and `textContent`) rather than raw string concatenation.
-- Prototype Pollution Defense: Custom JSON deserializer reviver blocks `__proto__`, `constructor`, and `prototype` keys during storage retrieval.
-- Parameter Bounds Enforcement: Latitude (-90 to 90) and longitude (-180 to 180) are strictly parsed and clamped before building query strings.
-- Content Security Policy: Strict origin whitelisting in `index.html` restricts scripts to `self` and `unpkg.com`, blocking unverified third-party script execution.
-- Clickjacking Prevention: `X-Frame-Options: DENY` and `frame-ancestors 'none'` rules block iframe embedding.
-- MIME Sniffing Protection: `X-Content-Type-Options: nosniff` header active on all asset responses.
+- Mitigasi DOM XSS: Penanda dan popup peta Leaflet menggunakan node DOM asli (`document.createElement` dan `textContent`), bukan penggabungan string HTML mentah.
+- Pertahanan Prototype Pollution: Fungsi reviver kustom pada parser JSON memblokir kunci `__proto__`, `constructor`, dan `prototype` saat membaca data penyimpanan lokal.
+- Pembatasan Parameter Input: Nilai lintang (-90 hingga 90) dan bujur (-180 hingga 180) divalidasi serta dibatasi secara ketat sebelum membuat string kueri.
+- Kebijakan Keamanan Konten (CSP): Pembatasan asal skrip di `index.html` hanya mengizinkan `self` dan `unpkg.com` guna memblokir eksekusi skrip pihak ketiga tanpa izin.
+- Pencegahan Clickjacking: Aturan `X-Frame-Options: DENY` dan `frame-ancestors 'none'` memblokir penyematan aplikasi ke dalam iframe.
+- Proteksi MIME Sniffing: Header `X-Content-Type-Options: nosniff` aktif pada semua respons aset.
 
-## Directory Structure
+## Struktur Direktori
 
 ```text
 ├── public/
-│   ├── favicon.svg          # Application vector icon
-│   └── manifest.json        # Progressive Web App manifest
+│   ├── favicon.svg          # Ikon vektor aplikasi
+│   └── manifest.json        # Manifest Progressive Web App
 ├── src/
-│   ├── assets/              # Static vector illustrations
+│   ├── assets/              # Ilustrasi vektor statis
 │   ├── components/
-│   │   ├── AnimatedBackground.svelte # Subtle canvas micro-grid
-│   │   ├── ForecastSection.svelte    # 24h curve, hourly and daily tabs
-│   │   ├── HourlyChart.svelte        # Interactive SVG Bezier spline
-│   │   ├── SearchHistory.svelte      # Query records and saved cities
-│   │   ├── SkeletonCard.svelte       # Loading state placeholders
-│   │   ├── Toast.svelte              # Non-blocking notification stack
-│   │   ├── WeatherCard.svelte        # Primary temperature and metrics card
-│   │   ├── WeatherDetails.svelte     # Bento telemetry grid
-│   │   ├── WeatherIcon.svelte        # Pure SVG weather symbol system
-│   │   └── WeatherMap.svelte         # Leaflet GIS container
+│   │   ├── AnimatedBackground.svelte # Lapisan kanvas mikro-grid
+│   │   ├── ForecastSection.svelte    # Tab kurva 24 jam, per jam, dan harian
+│   │   ├── HourlyChart.svelte        # Kurva Bezier interaktif SVG
+│   │   ├── SearchHistory.svelte      # Catatan kueri dan lokasi tersimpan
+│   │   ├── SkeletonCard.svelte       # Placeholder status pemuatan
+│   │   ├── Toast.svelte              # Notifikasi status non-blocking
+│   │   ├── WeatherCard.svelte        # Kartu utama suhu dan ringkasan metrik
+│   │   ├── WeatherDetails.svelte     # Grid telemetri bento
+│   │   ├── WeatherIcon.svelte        # Sistem simbol cuaca berbasis SVG murni
+│   │   └── WeatherMap.svelte         # Kontainer GIS Leaflet
 │   ├── lib/
-│   │   ├── security.js      # Input sanitization and storage guards
-│   │   └── weatherData.js   # Open-Meteo engine and mock fallback
-│   ├── App.svelte           # Root application shell and state coordinator
-│   ├── app.css              # Zinc design tokens and typography rules
-│   └── main.js              # Svelte 5 application entry point
-├── index.html               # Document root, CSP, and viewport setup
-├── package.json             # Dependencies and build scripts
-├── vercel.json              # HTTP response security headers
-└── vite.config.js           # Vite configuration
+│   │   ├── security.js      # Sanitasi input dan pengaman penyimpanan
+│   │   └── weatherData.js   # Mesin data Open-Meteo dan fallback simulasi
+│   ├── App.svelte           # Kerangka utama aplikasi dan koordinator state
+│   ├── app.css              # Token desain seng dan aturan tipografi
+│   └── main.js              # Titik masuk aplikasi Svelte 5
+├── index.html               # Dokumen root, konfigurasi CSP, dan viewport
+├── package.json             # Dependensi dan skrip build
+├── vercel.json              # Header keamanan respons HTTP
+└── vite.config.js           # Konfigurasi bundler Vite
 ```
 
-## Getting Started
+## Panduan Penggunaan
 
-### Prerequisites
+### Prasyarat
 
-- Node.js version 18.0 or later
-- npm version 9.0 or later
+- Node.js versi 18.0 atau lebih baru
+- npm versi 9.0 atau lebih baru
 
-### Installation
+### Instalasi
 
-1. Clone or extract the repository files to your local environment.
-2. Install dependencies:
+1. Klon atau ekstrak berkas repositori ke lingkungan lokal Anda.
+2. Pasang dependensi:
 
 ```bash
 npm install
 ```
 
-### Development Server
+### Server Pengembangan
 
-Start Vite in development mode with hot module replacement:
+Jalankan Vite dalam mode pengembangan dengan hot module replacement:
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+Buka `http://localhost:5173` di peramban Anda.
 
-### Production Build
+### Build Produksi
 
-Compile and bundle assets for production deployment:
+Kompilasi dan satukan aset untuk penerapan produksi:
 
 ```bash
 npm run build
 ```
 
-Preview the production build locally:
+Jalankan tinjauan build produksi secara lokal:
 
 ```bash
 npm run preview
 ```
 
-## License
+## Lisensi
 
-Private project. Meteorological data provided by Open-Meteo under Creative Commons Attribution 4.0 International (CC BY 4.0).
+Proyek privat. Data meteorologi disediakan oleh Open-Meteo di bawah lisensi Creative Commons Attribution 4.0 International (CC BY 4.0).
