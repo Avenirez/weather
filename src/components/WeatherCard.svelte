@@ -1,246 +1,297 @@
 <script>
   import { toFahrenheit } from '../lib/weatherData.js';
+  import WeatherIcon from './WeatherIcon.svelte';
+
   let { weather, useFahrenheit = false, isFavorite = false, onToggleFavorite } = $props();
 
   let displayTemp = $derived(useFahrenheit ? toFahrenheit(weather.temperature) : weather.temperature);
   let displayFeels = $derived(useFahrenheit ? toFahrenheit(weather.feelsLike) : weather.feelsLike);
-  let unit = $derived(useFahrenheit ? '°F' : '°C');
+  let unit = $derived(useFahrenheit ? 'F' : 'C');
 </script>
 
-<section class="weather-card glass-panel" aria-label="Cuaca saat ini">
-  <div class="card-top">
-    <div class="location-info">
-      <div class="city-name-row">
-        <svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<section class="panel weather-card" aria-label="Current weather report">
+  <div class="card-header">
+    <div class="location-block">
+      <div class="location-row">
+        <svg class="icon-geo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
           <circle cx="12" cy="10" r="3"/>
         </svg>
         <h1 class="city-name">{weather.city.name}</h1>
       </div>
-      <p class="country-name">{weather.city.country}</p>
+      <p class="country-label">{weather.city.country}</p>
     </div>
-    <div class="header-actions">
-      <button class="favorite-btn" onclick={onToggleFavorite} aria-label={isFavorite ? "Hapus dari Favorit" : "Tambah ke Favorit"} title={isFavorite ? "Hapus dari Favorit" : "Simpan Kota"}>
-        <svg viewBox="0 0 24 24" fill={isFavorite ? "#facc15" : "none"} stroke={isFavorite ? "#facc15" : "currentColor"} stroke-width="2" width="22" height="22">
+
+    <div class="action-block">
+      <button
+        class="btn-favorite"
+        onclick={onToggleFavorite}
+        aria-label={isFavorite ? "Remove from saved locations" : "Save location"}
+        title={isFavorite ? "Remove from saved" : "Save location"}
+      >
+        <svg viewBox="0 0 24 24" fill={isFavorite ? "#f59e0b" : "none"} stroke={isFavorite ? "#f59e0b" : "currentColor"} stroke-width="2" width="18" height="18">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       </button>
-      <div class="condition-badge">
-        <span class="pulse-dot"></span>
-        <span>Live</span>
+
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span class="status-text">LIVE</span>
       </div>
     </div>
   </div>
 
-  <div class="card-center">
-    <div class="weather-icon-wrap">
-      <span class="weather-icon">{weather.condition.icon}</span>
+  <div class="hero-block">
+    <div class="hero-visual">
+      <WeatherIcon condition={weather.conditionKey || weather.condition} size="96px" />
     </div>
-    <div class="temp-wrap">
-      <span class="temp-value">{displayTemp}</span>
-      <span class="temp-unit">{unit}</span>
+    <div class="hero-temperature">
+      <div class="temp-display mono-metric">
+        <span class="temp-digit">{displayTemp}</span>
+        <span class="temp-unit">&deg;{unit}</span>
+      </div>
+      <div class="condition-summary">
+        <span class="condition-name">{weather.condition.label}</span>
+        <span class="feels-label">Feels like {displayFeels}&deg;{unit}</span>
+      </div>
     </div>
   </div>
 
-  <div class="card-bottom">
-    <p class="condition-label">{weather.condition.label}</p>
-    <p class="feels-like">Terasa seperti {displayFeels}{unit}</p>
-  </div>
+  <div class="metrics-grid">
+    <div class="metric-cell" title="Relative Humidity">
+      <div class="metric-top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="metric-icon">
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+        </svg>
+        <span class="metric-label">Humidity</span>
+      </div>
+      <span class="metric-value mono-metric">{weather.humidity}%</span>
+    </div>
 
-  <div class="mini-stats">
-    <div class="mini-stat">
-      <span class="mini-stat-icon">💧</span>
-      <span>{weather.humidity}%</span>
+    <div class="metric-cell" title="Wind Velocity">
+      <div class="metric-top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="metric-icon">
+          <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+        </svg>
+        <span class="metric-label">Wind</span>
+      </div>
+      <span class="metric-value mono-metric">{weather.windSpeed} km/h</span>
     </div>
-    <div class="mini-stat">
-      <span class="mini-stat-icon">💨</span>
-      <span>{weather.windSpeed} km/h</span>
+
+    <div class="metric-cell" title="UV Radiation Index">
+      <div class="metric-top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="metric-icon">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <span class="metric-label">UV Index</span>
+      </div>
+      <span class="metric-value mono-metric">{weather.uvIndex}</span>
     </div>
-    <div class="mini-stat">
-      <span class="mini-stat-icon">☀️</span>
-      <span>UV {weather.uvIndex}</span>
+
+    <div class="metric-cell" title="Wind Direction">
+      <div class="metric-top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="metric-icon">
+          <polygon points="12 2 19 21 12 17 5 21 12 2"/>
+        </svg>
+        <span class="metric-label">Bearing</span>
+      </div>
+      <span class="metric-value mono-metric">{weather.windDir}</span>
     </div>
   </div>
 </section>
 
 <style>
   .weather-card {
-    padding: 2rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    animation: slideUp 0.6s ease;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
   }
 
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .card-top {
+  .card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1.5rem;
   }
 
-  .location-info { text-align: left; }
-
-  .city-name-row {
+  .location-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
 
-  .pin-icon { width: 20px; height: 20px; opacity: 0.8; }
+  .icon-geo {
+    color: var(--accent-primary);
+    flex-shrink: 0;
+  }
 
   .city-name {
-    font-size: 1.75rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
   }
 
-  .country-name {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
+  .country-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-left: 1.5rem;
     margin-top: 0.15rem;
-    margin-left: 1.75rem;
   }
 
-  .header-actions {
+  .action-block {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
   }
 
-  .favorite-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
+  .btn-favorite {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    backdrop-filter: blur(8px);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
   }
 
-  .favorite-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
+  .btn-favorite:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+    background: var(--bg-surface-hover);
   }
 
-  .favorite-btn:active {
-    transform: scale(0.95);
-  }
-
-  .condition-badge {
+  .status-pill {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 0.35rem 0.85rem;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    backdrop-filter: blur(8px);
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-sm);
   }
 
-  .pulse-dot {
-    width: 8px;
-    height: 8px;
-    background: #4ade80;
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-success);
     border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
+  .status-text {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
   }
 
-  .card-center {
+  .hero-block {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin: 1.5rem 0;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
   }
 
-  .weather-icon {
-    font-size: 5rem;
-    display: block;
-    animation: iconBounce 3s ease-in-out infinite;
-    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+  .hero-visual {
+    flex-shrink: 0;
   }
 
-  @keyframes iconBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+  .hero-temperature {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 
-  .temp-wrap {
+  .temp-display {
     display: flex;
     align-items: flex-start;
-    line-height: 1;
+    line-height: 0.95;
   }
 
-  .temp-value {
-    font-size: 6rem;
-    font-weight: 800;
-    letter-spacing: -0.05em;
-    background: linear-gradient(180deg, #ffffff 30%, rgba(255, 255, 255, 0.6));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .temp-digit {
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
   }
 
   .temp-unit {
-    font-size: 1.75rem;
-    font-weight: 600;
-    opacity: 0.7;
-    margin-top: 0.8rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 0.35rem;
+    margin-left: 0.2rem;
   }
 
-  .card-bottom { margin-bottom: 1.5rem; }
-
-  .condition-label {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 0.3rem;
-  }
-
-  .feels-like {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-  }
-
-  .mini-stats {
+  .condition-summary {
     display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-direction: column;
+    gap: 0.15rem;
   }
 
-  .mini-stat {
+  .condition-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .feels-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .metric-cell {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .metric-top {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
+    gap: 0.35rem;
   }
 
-  .mini-stat-icon { font-size: 1rem; }
+  .metric-icon {
+    color: var(--text-muted);
+  }
 
-  @media (max-width: 480px) {
-    .weather-card { padding: 1.5rem; }
-    .city-name { font-size: 1.4rem; }
-    .weather-icon { font-size: 3.5rem; }
-    .temp-value { font-size: 4rem; }
+  .metric-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .metric-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 520px) {
+    .metrics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .temp-digit {
+      font-size: 3.5rem;
+    }
   }
 </style>

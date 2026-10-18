@@ -1,43 +1,109 @@
-# Svelte + Vite
+# Weatherez: Atmospheric Telemetry Engine
 
-This template should help get you started developing with Svelte in Vite.
+A client-side meteorological monitoring application built with Svelte 5 and Vite. It consumes open weather and air quality APIs to deliver real-time environmental metrics, 24-hour predictive curves, and geospatial telemetry.
 
-## Recommended IDE Setup
+## System Architecture
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+Weatherez connects to public upstream endpoints without an intermediate proxy server:
 
-## Need an official Svelte framework?
+1. Open-Meteo Forecast API: Current weather vectors, 24-hour temperature steps, 7-day high/low boundaries, and solar ephemeris (sunrise and sunset timestamps).
+2. Open-Meteo Air Quality API: European Air Quality Index (AQI), PM2.5, PM10, ozone, carbon monoxide, nitrogen dioxide, and solar UV radiation.
+3. Open-Meteo Geocoding API: Substring lookup for global coordinates, administrative divisions, and timezones.
+4. BigDataCloud Reverse Geocoding API: Resolves browser hardware coordinates (WGS84) to local municipal boundaries.
+5. Deterministic Simulation Fallback: In offline states or during upstream outages, a local pseudo-random generator computes seasonal baseline data matched to geographic latitude.
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Core Capabilities
 
-## Technical considerations
+- High-Density Telemetry: Surface temperature, apparent temperature, relative humidity, barometric pressure, horizontal visibility, and cloud cover.
+- 24-Hour Continuous Spline Chart: SVG cubic Bezier curve showing hourly temperature variation and rain probability bars.
+- Vector Solar Trajectory: Computes diurnal sun position along an SVG geometric arc based on local sunrise and sunset timestamps.
+- Directional Wind Compass: Visual dial showing bearing degrees and cardinal markers (N, E, S, W) linked to surface wind velocity.
+- Debounced Query Engine: 250ms input debouncer with full keyboard navigation (Up, Down, Enter, Escape) and metro suggestions.
+- Location Persistence: LocalStorage records for search history and saved locations with prototype pollution filtering.
+- Visual Mode Override: State toggle between automatic solar cycle, permanent dark theme, and permanent light theme.
 
-**Why use this over SvelteKit?**
+## Security Controls
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+The application enforces client-side controls aligned with standard web application security requirements:
 
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+- DOM XSS Mitigation: Leaflet map markers and popups use native DOM nodes (`document.createElement` and `textContent`) rather than raw string concatenation.
+- Prototype Pollution Defense: Custom JSON deserializer reviver blocks `__proto__`, `constructor`, and `prototype` keys during storage retrieval.
+- Parameter Bounds Enforcement: Latitude (-90 to 90) and longitude (-180 to 180) are strictly parsed and clamped before building query strings.
+- Content Security Policy: Strict origin whitelisting in `index.html` restricts scripts to `self` and `unpkg.com`, blocking unverified third-party script execution.
+- Clickjacking Prevention: `X-Frame-Options: DENY` and `frame-ancestors 'none'` rules block iframe embedding.
+- MIME Sniffing Protection: `X-Content-Type-Options: nosniff` header active on all asset responses.
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+## Directory Structure
 
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `checkJs` in the JS template?**
-
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```text
+├── public/
+│   ├── favicon.svg          # Application vector icon
+│   └── manifest.json        # Progressive Web App manifest
+├── src/
+│   ├── assets/              # Static vector illustrations
+│   ├── components/
+│   │   ├── AnimatedBackground.svelte # Subtle canvas micro-grid
+│   │   ├── ForecastSection.svelte    # 24h curve, hourly and daily tabs
+│   │   ├── HourlyChart.svelte        # Interactive SVG Bezier spline
+│   │   ├── SearchHistory.svelte      # Query records and saved cities
+│   │   ├── SkeletonCard.svelte       # Loading state placeholders
+│   │   ├── Toast.svelte              # Non-blocking notification stack
+│   │   ├── WeatherCard.svelte        # Primary temperature and metrics card
+│   │   ├── WeatherDetails.svelte     # Bento telemetry grid
+│   │   ├── WeatherIcon.svelte        # Pure SVG weather symbol system
+│   │   └── WeatherMap.svelte         # Leaflet GIS container
+│   ├── lib/
+│   │   ├── security.js      # Input sanitization and storage guards
+│   │   └── weatherData.js   # Open-Meteo engine and mock fallback
+│   ├── App.svelte           # Root application shell and state coordinator
+│   ├── app.css              # Zinc design tokens and typography rules
+│   └── main.js              # Svelte 5 application entry point
+├── index.html               # Document root, CSP, and viewport setup
+├── package.json             # Dependencies and build scripts
+├── vercel.json              # HTTP response security headers
+└── vite.config.js           # Vite configuration
 ```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js version 18.0 or later
+- npm version 9.0 or later
+
+### Installation
+
+1. Clone or extract the repository files to your local environment.
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+### Development Server
+
+Start Vite in development mode with hot module replacement:
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:5173` in your browser.
+
+### Production Build
+
+Compile and bundle assets for production deployment:
+
+```bash
+npm run build
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## License
+
+Private project. Meteorological data provided by Open-Meteo under Creative Commons Attribution 4.0 International (CC BY 4.0).

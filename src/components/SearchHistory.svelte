@@ -1,200 +1,244 @@
 <script>
   let { history = [], favorites = [], onselect, onremove, onremoveFavorite } = $props();
-  let activeTab = $state('history'); // 'history' or 'favorites'
+  let activeTab = $state('history');
 </script>
 
 {#if history.length > 0 || favorites.length > 0}
-  <section class="search-history" aria-label="Riwayat dan Favorit">
-    <div class="tabs">
-      <button class="tab-btn" class:active={activeTab === 'history'} onclick={() => activeTab = 'history'}>
-        Terakhir Dicari
+  <section class="panel history-section" aria-label="Location records">
+    <div class="tabs" role="tablist">
+      <button
+        class="tab-btn"
+        class:active={activeTab === 'history'}
+        onclick={() => activeTab = 'history'}
+        role="tab"
+        aria-selected={activeTab === 'history'}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="tab-icon">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Recent Searches</span>
+        {#if history.length > 0}
+          <span class="count-badge mono-metric">{history.length}</span>
+        {/if}
       </button>
-      <button class="tab-btn" class:active={activeTab === 'favorites'} onclick={() => activeTab = 'favorites'}>
-        Kota Favorit ⭐
+
+      <button
+        class="tab-btn"
+        class:active={activeTab === 'favorites'}
+        onclick={() => activeTab = 'favorites'}
+        role="tab"
+        aria-selected={activeTab === 'favorites'}
+      >
+        <svg viewBox="0 0 24 24" fill={activeTab === 'favorites' ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" width="14" height="14" class="tab-icon fav">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span>Saved Locations</span>
+        {#if favorites.length > 0}
+          <span class="count-badge mono-metric fav">{favorites.length}</span>
+        {/if}
       </button>
     </div>
 
     {#if activeTab === 'history' && history.length > 0}
-      <div class="history-chips">
+      <div class="chips-container">
         {#each history as city, i}
           <div
-            class="history-chip glass-panel"
+            class="city-chip"
             onclick={() => onselect?.(city)}
-            onkeydown={(e) => e.key === 'Enter' && onselect?.(city)}
+            onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && onselect?.(city)}
             role="button"
             tabindex="0"
-            style="animation-delay: {i * 0.05}s"
+            title="Inspect weather for {city.name}"
           >
-            <svg class="chip-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
               <circle cx="12" cy="10" r="3"/>
             </svg>
             <span class="chip-name">{city.name}</span>
             <span class="chip-country">{city.country}</span>
-            <span
-              class="chip-remove"
+            <button
+              class="chip-delete"
               onclick={(e) => { e.stopPropagation(); onremove?.(i); }}
-              onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onremove?.(i); } }}
-              role="button"
-              tabindex="0"
-              aria-label="Hapus {city.name}"
+              aria-label="Remove {city.name}"
+              title="Delete record"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
-            </span>
+            </button>
           </div>
         {/each}
       </div>
     {:else if activeTab === 'history'}
-      <p class="empty-state">Belum ada riwayat pencarian.</p>
+      <div class="empty-notice">
+        <span>No recent search queries recorded.</span>
+      </div>
     {/if}
 
     {#if activeTab === 'favorites' && favorites.length > 0}
-      <div class="history-chips">
+      <div class="chips-container">
         {#each favorites as city, i}
           <div
-            class="history-chip glass-panel fav-chip"
+            class="city-chip is-saved"
             onclick={() => onselect?.(city)}
-            onkeydown={(e) => e.key === 'Enter' && onselect?.(city)}
+            onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && onselect?.(city)}
             role="button"
             tabindex="0"
-            style="animation-delay: {i * 0.05}s"
+            title="Inspect saved weather for {city.name}"
           >
-            <svg class="chip-pin" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="2" width="14" height="14">
+            <svg class="chip-icon fav" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" width="12" height="12">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
             </svg>
             <span class="chip-name">{city.name}</span>
             <span class="chip-country">{city.country}</span>
-            <span
-              class="chip-remove"
+            <button
+              class="chip-delete"
               onclick={(e) => { e.stopPropagation(); onremoveFavorite?.(i); }}
-              onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onremoveFavorite?.(i); } }}
-              role="button"
-              tabindex="0"
-              aria-label="Hapus {city.name}"
+              aria-label="Remove saved {city.name}"
+              title="Delete saved location"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
-            </span>
+            </button>
           </div>
         {/each}
       </div>
     {:else if activeTab === 'favorites'}
-      <p class="empty-state">Belum ada kota favorit yang disimpan.</p>
+      <div class="empty-notice">
+        <span>No saved locations. Click the star icon on any report to store a location.</span>
+      </div>
     {/if}
   </section>
 {/if}
 
 <style>
-  .search-history { animation: slideUp 0.6s ease 0.4s both; margin-top: 1rem; }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  .history-section {
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
   }
 
   .tabs {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
     padding-bottom: 0.5rem;
   }
 
   .tab-btn {
     background: transparent;
     border: none;
-    color: var(--color-text-secondary);
-    font-size: 1rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
-    transition: color 0.3s, transform 0.3s;
-    font-family: inherit;
+    padding: 0.35rem 0.65rem;
+    transition: color var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
     position: relative;
+    border-radius: var(--radius-sm);
   }
 
-  .tab-btn:hover { color: #ffffff; }
-
-  .tab-btn.active { color: #ffffff; }
-
-  .tab-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: -0.6rem;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: #60a5fa;
-    border-radius: 3px;
+  .tab-btn:hover {
+    color: var(--text-primary);
   }
 
-  .history-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .tab-btn.active {
+    color: var(--text-primary);
+    background: var(--bg-surface-elevated);
+  }
 
-  .history-chip {
+  .tab-icon {
+    color: var(--text-muted);
+  }
+
+  .tab-icon.fav {
+    color: #f59e0b;
+  }
+
+  .count-badge {
+    font-size: 0.68rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--radius-sm);
+    background: var(--border-subtle);
+    color: var(--text-secondary);
+  }
+
+  .count-badge.fav {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+
+  .chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .city-chip {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.5rem 0.85rem;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    color: var(--color-text-primary);
-    transition: all 0.3s ease;
-    animation: fadeIn 0.4s ease both;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
     cursor: pointer;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+  .city-chip:hover {
+    background: var(--bg-surface-hover);
+    border-color: var(--border-strong);
   }
 
-  .history-chip:hover {
-    background: var(--glass-bg-hover);
-    transform: translateY(-2px);
+  .city-chip.is-saved {
+    border-color: rgba(245, 158, 11, 0.25);
   }
 
-  .fav-chip {
-    background: rgba(250, 204, 21, 0.1);
-    border: 1px solid rgba(250, 204, 21, 0.2);
-  }
-  .fav-chip:hover {
-    background: rgba(250, 204, 21, 0.2);
+  .chip-icon {
+    color: var(--text-muted);
   }
 
-  .chip-pin { opacity: 0.6; }
-  .fav-chip .chip-pin { opacity: 1; }
+  .chip-name {
+    font-weight: 600;
+  }
 
-  .chip-name { font-weight: 600; }
-  .chip-country { color: var(--color-text-secondary); font-size: 0.75rem; }
+  .chip-country {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+  }
 
-  .chip-remove {
+  .chip-delete {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--color-text-secondary);
-    margin-left: 0.25rem;
-    transition: all 0.2s ease;
-    padding: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
     cursor: pointer;
+    margin-left: 0.2rem;
+    transition: all var(--transition-fast);
   }
 
-  .chip-remove:hover {
-    background: rgba(239, 68, 68, 0.5);
-    color: #ffffff;
+  .chip-delete:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--color-danger);
   }
 
-  .empty-state {
-    font-size: 0.85rem;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    opacity: 0.8;
-    padding: 1rem 0;
+  .empty-notice {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 0.5rem 0;
   }
 </style>

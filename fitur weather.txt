@@ -1,0 +1,74 @@
+Berdasarkan kode sumber aplikasi cuaca SkyFlow yang ada di repositori Anda, berikut adalah fitur-fitur utama yang ditawarkan oleh website cuaca ini:
+
+1. Informasi Cuaca Terkini (Real-Time Weather)
+Menampilkan suhu saat ini, status cuaca (cerah, mendung, hujan, badai, dll.), suhu tertinggi/terendah harian, serta deskripsi singkat cuaca yang aktif.
+Diimplementasikan di 
+
+WeatherCard.svelte
+.
+2. Detail Metrik Cuaca Lengkap (Detailed Weather Metrics)
+Menampilkan berbagai parameter cuaca yang mendalam untuk analisis kondisi lingkungan, antara lain:
+Kelembapan (Humidity): Dilengkapi dengan perhitungan titik embun (dew point).
+Angin (Wind): Menampilkan kecepatan angin (km/h) beserta arah angin yang divisualisasikan dengan kompas dinamis.
+Indeks UV: Menunjukkan skala kekuatan radiasi matahari dari level rendah hingga ekstrem.
+Kualitas Udara (AQI): Menampilkan Indeks Kualitas Udara standar Eropa (European AQI) beserta metrik partikel polutan seperti PM2.5 dan PM10.
+Tekanan Udara (Air Pressure): Menampilkan tekanan udara dalam satuan hPa.
+Jarak Pandang (Visibility): Memperlihatkan jarak pandang dalam kilometer.
+Tutupan Awan (Cloud Cover): Memberi informasi persentase awan di langit.
+Diimplementasikan di 
+
+WeatherDetails.svelte
+.
+3. Prakiraan Cuaca Per Jam & Harian (Hourly & Daily Forecast)
+Memberikan data prakiraan cuaca jangka pendek (per jam untuk hari ini) serta jangka panjang (prakiraan harian untuk beberapa hari ke depan) untuk mempermudah perencanaan aktivitas pengguna.
+Diimplementasikan di 
+
+ForecastSection.svelte
+.
+4. Peta Lokasi Interaktif (Weather Map)
+Integrasi peta interaktif untuk memvisualisasikan lokasi geografis dari kota yang sedang dipilih.
+Diimplementasikan di 
+
+WeatherMap.svelte
+.
+5. Pencarian Kota Global dengan Rekomendasi (Autocomplete City Search)
+Pengguna dapat mencari cuaca di kota mana pun secara global. Fitur pencarian dilengkapi dengan saran otomatis (dropdown suggestions) berdasarkan koordinat koordinasi geocoding secara dinamis saat mengetik kata kunci.
+Diimplementasikan di 
+
+App.svelte
+.
+6. Deteksi Lokasi Otomatis (Geolocation)
+Menggunakan fitur bawaan browser (Browser Geolocation API) untuk mendeteksi lokasi pengguna saat ini secara otomatis dan langsung memuat informasi cuaca lokal.
+Diimplementasikan di 
+
+App.svelte
+.
+7. Pengingat & Peringatan Cuaca Ekstrem (Extreme Weather Alerts)
+Mampu mendeteksi kondisi cuaca yang ekstrem (seperti angin kencang di atas 40 km/h, indeks UV $\ge 8$, AQI buruk $\ge 80$, atau badai petir/hujan lebat) dan menampilkan kotak peringatan (banner hazard berwarna merah menyala) secara visual di layar.
+Diimplementasikan di 
+
+WeatherDetails.svelte
+.
+8. Riwayat Pencarian & Daftar Favorit (Search History & Favorites)
+Riwayat: Menyimpan daftar kota-kota yang terakhir kali dicari sehingga pengguna bisa berpindah dengan cepat.
+Favorit: Memungkinkan pengguna menandai kota tertentu sebagai favorit untuk disimpan secara permanen.
+Fitur ini mempertahankan datanya menggunakan penyimpanan lokal browser (LocalStorage) agar tidak hilang saat halaman dimuat ulang.
+Diimplementasikan di 
+
+SearchHistory.svelte
+.
+9. Latar Belakang Animasi Dinamis (Dynamic Animated Background)
+Latar belakang website akan beradaptasi secara visual menyesuaikan dengan cuaca kota yang dipilih (misal: memunculkan animasi awan bergerak saat mendung, rintik hujan saat hujan, atau langit cerah berpendar).
+Diimplementasikan di 
+
+AnimatedBackground.svelte
+.
+10. Konversi Satuan Suhu (°C / °F)
+Pengguna dapat mengubah satuan pengukuran suhu secara instan di bagian pojok kanan atas layar antara Celsius (°C) dan Fahrenheit (°F).
+Diimplementasikan di 
+
+App.svelte
+ dan didukung oleh fungsi bantuan di 
+
+weatherData.js
+.
