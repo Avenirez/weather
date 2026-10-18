@@ -4,6 +4,8 @@
   let { lat, lon, name } = $props();
   
   let mapElement;
+  // Use $state.raw() — Svelte 5's $state() wraps objects in deep proxies
+  // which breaks Leaflet's internal methods (setView, setLatLng, etc.)
   let map = $state.raw(null);
   let marker = $state.raw(null);
 
@@ -13,6 +15,7 @@
     return bold;
   }
 
+  // Reactively update map when coordinates change
   $effect(() => {
     if (map && lat !== undefined && lon !== undefined) {
       map.setView([lat, lon], 10);
@@ -29,27 +32,26 @@
   });
 
   onMount(() => {
-    const leafletMap = L.map(mapElement, {
-      zoomControl: false,
-      attributionControl: false
-    }).setView([lat || 0, lon || 0], 10);
+    // Initialize map with initial coordinates
+    const leafletMap = L.map(mapElement).setView([lat || 0, lon || 0], 10);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(leafletMap);
 
-    L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
-
+    // Create initial marker
     if (lat !== undefined && lon !== undefined) {
       const m = L.marker([lat, lon]).addTo(leafletMap);
       m.bindPopup(createPopupElement(name)).openPopup();
       marker = m;
     }
     
+    // Fix map sizing issues within flex/grid containers
     setTimeout(() => {
       leafletMap.invalidateSize();
     }, 200);
 
+    // Assign to reactive variable AFTER full setup — this triggers $effect for future updates
     map = leafletMap;
   });
 
@@ -60,77 +62,49 @@
   });
 </script>
 
-<div class="panel weather-map-wrapper" aria-label="Geographic map">
-  <div class="map-head">
-    <div class="map-title-row">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" class="map-icon">
-        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
-        <line x1="8" y1="2" x2="8" y2="18"/>
-        <line x1="16" y1="6" x2="16" y2="22"/>
-      </svg>
-      <h3 class="section-title">Geographic Coordinates</h3>
-    </div>
-    <span class="coord-label mono-metric">
-      {lat !== undefined ? `${Math.abs(lat).toFixed(2)}${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(2)}${lon >= 0 ? 'E' : 'W'}` : ''}
-    </span>
-  </div>
-
+<div class="weather-map-wrapper">
+  <h3 class="section-title">Peta Lokasi</h3>
   <div class="map-container" bind:this={mapElement}></div>
 </div>
 
 <style>
   .weather-map-wrapper {
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .map-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .map-title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-  }
-
-  .map-icon {
-    color: var(--accent-primary);
+    margin-top: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 1.5rem;
   }
 
   .section-title {
-    font-size: 0.88rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .coord-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    margin-bottom: 1rem;
+    margin-top: 0;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .map-container {
     width: 100%;
-    height: 220px;
-    border-radius: var(--radius-md);
+    height: 250px;
+    border-radius: 16px;
     overflow: hidden;
-    border: 1px solid var(--border-subtle);
-    background: var(--bg-surface-elevated);
-    z-index: 1;
+    background: rgba(0,0,0,0.1); /* Placeholder before tiles load */
+    z-index: 1; /* Keep leaflet controls below custom overlapping elements */
   }
 
+  /* Make sure leaflet controls match the theme */
   :global(.leaflet-popup-content-wrapper) {
-    background: var(--bg-surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-md);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    color: #333;
+    font-family: 'Inter', sans-serif;
   }
   :global(.leaflet-popup-tip) {
-    background: var(--bg-surface);
+    background: rgba(255, 255, 255, 0.85);
   }
 </style>

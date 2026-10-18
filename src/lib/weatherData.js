@@ -27,19 +27,19 @@ export const CITIES = [
   { name: 'Sydney', country: 'Australia', lat: -33.87, lon: 151.21, tz: 10 },
 ];
 
-// Weather condition database without emojis
+// Kondisi cuaca dengan ikon dan deskripsi
 export const WEATHER_CONDITIONS = {
-  sunny: { key: 'sunny', label: 'Clear Sky', theme: 'sunny' },
-  partly_cloudy: { key: 'partly_cloudy', label: 'Partly Cloudy', theme: 'sunny' },
-  cloudy: { key: 'cloudy', label: 'Overcast', theme: 'cloudy' },
-  light_rain: { key: 'light_rain', label: 'Light Rain', theme: 'rainy' },
-  rain: { key: 'rain', label: 'Moderate Rain', theme: 'rainy' },
-  heavy_rain: { key: 'heavy_rain', label: 'Heavy Precipitation', theme: 'rainy' },
-  thunderstorm: { key: 'thunderstorm', label: 'Thunderstorm', theme: 'rainy' },
-  snow: { key: 'snow', label: 'Snow Flurries', theme: 'cloudy' },
-  fog: { key: 'fog', label: 'Dense Fog', theme: 'cloudy' },
-  clear_night: { key: 'clear_night', label: 'Clear Sky (Night)', theme: 'night' },
-  cloudy_night: { key: 'cloudy_night', label: 'Partly Cloudy (Night)', theme: 'night' },
+  sunny: { icon: '☀️', label: 'Cerah', theme: 'sunny' },
+  partly_cloudy: { icon: '⛅', label: 'Berawan Sebagian', theme: 'sunny' },
+  cloudy: { icon: '☁️', label: 'Mendung', theme: 'cloudy' },
+  light_rain: { icon: '🌦️', label: 'Hujan Ringan', theme: 'rainy' },
+  rain: { icon: '🌧️', label: 'Hujan', theme: 'rainy' },
+  heavy_rain: { icon: '⛈️', label: 'Hujan Lebat', theme: 'rainy' },
+  thunderstorm: { icon: '🌩️', label: 'Badai Petir', theme: 'rainy' },
+  snow: { icon: '🌨️', label: 'Salju', theme: 'cloudy' },
+  fog: { icon: '🌫️', label: 'Berkabut', theme: 'cloudy' },
+  clear_night: { icon: '🌙', label: 'Cerah (Malam)', theme: 'night' },
+  cloudy_night: { icon: '☁️', label: 'Berawan (Malam)', theme: 'night' },
 };
 
 // Seed-based pseudo-random generator for consistent results per city/day
@@ -127,11 +127,6 @@ export function generateWeatherData(city) {
   const dewPoint = Math.round(temp - (100 - humidity) / 5);
   const cloudCover = conditionKey === 'sunny' ? Math.round(rand() * 15) : Math.round(40 + rand() * 60);
 
-  const windDegree = windDirections.indexOf(windDir) * 45;
-  const todayStr = now.toISOString().split('T')[0];
-  const sunrise = `${todayStr}T05:52:00`;
-  const sunset = `${todayStr}T18:14:00`;
-
   return {
     city,
     temperature: temp,
@@ -141,9 +136,6 @@ export function generateWeatherData(city) {
     humidity: Math.min(humidity, 100),
     windSpeed,
     windDir,
-    windDegree,
-    sunrise,
-    sunset,
     pressure,
     visibility,
     uvIndex,
@@ -161,7 +153,7 @@ export function generateWeatherData(city) {
 export function generateForecast(city) {
   const now = new Date();
   const forecast = [];
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
   for (let i = 0; i < 7; i++) {
     const date = new Date(now);
@@ -211,7 +203,7 @@ export function generateForecast(city) {
 
     forecast.push({
       date: date.toISOString().split('T')[0],
-      dayName: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayNames[date.getDay()],
+      dayName: i === 0 ? 'Hari ini' : i === 1 ? 'Besok' : dayNames[date.getDay()],
       tempHigh,
       tempLow,
       condition: WEATHER_CONDITIONS[conditionKey],
@@ -269,7 +261,6 @@ export function generateHourlyForecast(city) {
       hour: `${String(hour).padStart(2, '0')}:00`,
       temp,
       condition: WEATHER_CONDITIONS[condKey],
-      rainChance: condKey.includes('rain') ? Math.round(40 + rand() * 50) : Math.round(rand() * 20),
       isNow: i === 0,
     });
   }
@@ -299,34 +290,31 @@ export function toFahrenheit(celsius) {
  * Get UV level description
  */
 export function getUvLevel(uv) {
-  if (uv <= 2) return { label: 'Low', color: 'var(--color-success)' };
-  if (uv <= 5) return { label: 'Moderate', color: 'var(--color-warning)' };
-  if (uv <= 7) return { label: 'High', color: '#ea580c' };
-  if (uv <= 10) return { label: 'Very High', color: 'var(--color-danger)' };
-  return { label: 'Extreme', color: '#b91c1c' };
+  if (uv <= 2) return { label: 'Rendah', color: '#4ade80' };
+  if (uv <= 5) return { label: 'Sedang', color: '#facc15' };
+  if (uv <= 7) return { label: 'Tinggi', color: '#fb923c' };
+  if (uv <= 10) return { label: 'Sangat Tinggi', color: '#f87171' };
+  return { label: 'Ekstrem', color: '#a855f7' };
 }
 
 /**
  * Get wind description
  */
 export function getWindLevel(speed) {
-  if (speed < 10) return 'Light Air';
-  if (speed < 20) return 'Gentle Breeze';
-  if (speed < 30) return 'Moderate Gale';
-  return 'High Wind';
+  if (speed < 10) return 'Tenang';
+  if (speed < 20) return 'Sepoi-sepoi';
+  if (speed < 30) return 'Sedang';
+  return 'Kencang';
 }
 
 /**
- * Format date to standard ASCII format
+ * Format date to Indonesian locale
  */
 export function formatDateIndonesian(date) {
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const d = new Date(date);
-  return d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 // --- NEW API INTEGRATION ---
@@ -380,37 +368,29 @@ function mapWmoToCondition(code, isDay) {
   return WEATHER_CONDITIONS.cloudy;
 }
 
-import { validateCoordinates, sanitizeSearchQuery, escapeHtml } from './security.js';
-
 /**
  * Fetch real coordinates and city name using Geocoding API
  */
 export async function fetchCityCoordinates(query) {
   try {
-    const cleanQuery = sanitizeSearchQuery(query);
-    if (!cleanQuery || cleanQuery.length < 2) return [];
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanQuery)}&count=5&language=en&format=json`;
+    if (!query || query.trim().length < 2) return [];
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to query geocoding endpoint");
+    if (!res.ok) throw new Error("Gagal mengambil data kota");
     const data = await res.json();
     if (!data.results) return [];
     
-    return data.results
-      .map(item => {
-        const coords = validateCoordinates(item.latitude, item.longitude);
-        if (!coords.valid) return null;
-        return {
-          name: escapeHtml(String(item.name || '').slice(0, 80)),
-          country: escapeHtml(String(item.country || item.admin1 || '').slice(0, 80)),
-          lat: coords.lat,
-          lon: coords.lon,
-          tz: item.timezone || 'auto',
-          id: item.id
-        };
-      })
-      .filter(item => item !== null);
+    return data.results.map(item => ({
+      name: item.name,
+      country: item.country || item.admin1 || '',
+      lat: item.latitude,
+      lon: item.longitude,
+      tz: item.timezone || 'auto',
+      id: item.id
+    }));
   } catch (error) {
     console.error("Error searching cities API:", error);
+    // Fallback to local mock search if API fails
     return searchCities(query);
   }
 }
@@ -420,19 +400,12 @@ export async function fetchCityCoordinates(query) {
  */
 export async function fetchRealWeatherData(lat, lon, cityName, countryName) {
   try {
-    const coords = validateCoordinates(lat, lon);
-    const safeLat = coords.lat;
-    const safeLon = coords.lon;
-    const safeCityName = escapeHtml(String(cityName || 'Unknown Location').slice(0, 80));
-    const safeCountryName = escapeHtml(String(countryName || 'Unknown Region').slice(0, 80));
-
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${safeLat}&longitude=${safeLon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to query weather endpoint");
+    if (!res.ok) throw new Error("Gagal mengambil data cuaca");
     const data = await res.json();
     
     const current = data.current;
-    const daily = data.daily;
     const isDay = current.is_day === 1;
     const condition = mapWmoToCondition(current.weather_code, isDay);
     
@@ -440,12 +413,11 @@ export async function fetchRealWeatherData(lat, lon, cityName, countryName) {
     const conditionKey = Object.keys(WEATHER_CONDITIONS).find(key => WEATHER_CONDITIONS[key] === condition) || (isDay ? 'sunny' : 'clear_night');
     
     const windDirections = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-    const windDegree = Math.round(current.wind_direction_10m || 0);
-    const windDir = windDirections[Math.round(((windDegree % 360) / 45)) % 8];
+    const windDir = windDirections[Math.round(((current.wind_direction_10m % 360) / 45)) % 8];
 
     // Format current weather matching our internal structure
     const weatherData = {
-      city: { name: safeCityName, country: safeCountryName, lat: safeLat, lon: safeLon },
+      city: { name: cityName, country: countryName, lat, lon },
       temperature: Math.round(current.temperature_2m),
       feelsLike: Math.round(current.apparent_temperature),
       condition,
@@ -453,9 +425,6 @@ export async function fetchRealWeatherData(lat, lon, cityName, countryName) {
       humidity: current.relative_humidity_2m,
       windSpeed: Math.round(current.wind_speed_10m),
       windDir,
-      windDegree,
-      sunrise: daily?.sunrise?.[0] || null,
-      sunset: daily?.sunset?.[0] || null,
       pressure: Math.round(current.surface_pressure),
       visibility: 10, // Open-Meteo doesn't always provide good visibility data in standard API
       uvIndex: 0, // We will get this from the Air Quality API
@@ -467,13 +436,14 @@ export async function fetchRealWeatherData(lat, lon, cityName, countryName) {
     };
     
     // Format daily forecast
+    const daily = data.daily;
     const forecast = [];
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
     for (let i = 0; i < Math.min(7, daily.time.length); i++) {
       const date = new Date(daily.time[i]);
       forecast.push({
         date: daily.time[i],
-        dayName: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : dayNames[date.getDay()],
+        dayName: i === 0 ? 'Hari ini' : i === 1 ? 'Besok' : dayNames[date.getDay()],
         tempHigh: Math.round(daily.temperature_2m_max[i]),
         tempLow: Math.round(daily.temperature_2m_min[i]),
         condition: mapWmoToCondition(daily.weather_code[i], true),
@@ -499,7 +469,6 @@ export async function fetchRealWeatherData(lat, lon, cityName, countryName) {
         hour: `${String(date.getHours()).padStart(2, '0')}:00`,
         temp: Math.round(hourlyData.temperature_2m[idx]),
         condition: hrCondition,
-        rainChance: hourlyData.precipitation_probability ? (hourlyData.precipitation_probability[idx] || 0) : 0,
         isNow: i === 0
       });
     }
@@ -522,8 +491,7 @@ export async function fetchRealWeatherData(lat, lon, cityName, countryName) {
  */
 export async function fetchAirQuality(lat, lon) {
   try {
-    const coords = validateCoordinates(lat, lon);
-    const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${coords.lat}&longitude=${coords.lon}&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone,uv_index&timezone=auto`;
+    const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone,uv_index&timezone=auto`;
     const res = await fetch(url);
     if (!res.ok) return null;
     const data = await res.json();
